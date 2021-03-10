@@ -1,0 +1,28 @@
+{
+  "name": "calculate_from_chat",
+  "title": "Chat Command - Calculate",
+  "description": "Add Chat command to calculate a total from last N rolls.",
+  "version": "0.0.1",
+  "minimumCoreVersion" : "0.7.9",
+  "compatibleCoreVersion": "0.7.9",
+  "author": "wsaunders1014",
+  "scripts": ["chat-calculate.js"],
+  "styles": "",
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }    
+  ],
+  "dependencies":[
+    {
+      "name": "_chatcommands",
+      "type": "module",
+      "manifest": "https://github.com/League-of-Foundry-Developers/Chat-Commands-Lib/releases/download/1.2.0/module.json"
+    }
+  ],
+  "url": "https://github.com/wsaunders1014/calculate_from_chat",
+  "manifest": "https://github.com/wsaunders1014/calculate_from_chat/master/module/module.json",
+  "download": "https://github.com/wsaunders1014/calculate_from_chat/releases/download/v0.1.1/release.zip"
+}
