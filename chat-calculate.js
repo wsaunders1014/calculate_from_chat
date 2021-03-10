@@ -21,6 +21,7 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
       let timer = /\d+s|sec/g.test(messageText);
       let any = /any/g.test(messageText); // Set any flag
       let primary = /primary/g.test(messageText); //Set primary flag
+      let all = /all/g.test(messageText);
       //let secondary = /secondary/g.test(messageText); //Set secondary flag
       const userId = game.user.data._id;
       const tokenId = canvas.tokens.controlled[0]?.id || game.data.messages[game.data.messages.length-1].speaker.token;
@@ -39,21 +40,24 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
       if(!timer){ // iterate through messages for N dice rolls.
 
         for(let i=length,x=0;x<N;i--){
-          console.log(i)
+         console.log('total:',total)
           if(i==0) break; // Last message
           let message = game.data.messages[i-1];
            console.log('message: ', message)
            console.log(message.speaker.alias === 'CALCULATOR', message.speaker.actor != actorId)
-          if(message.speaker.alias === 'CALCULATOR' || message.speaker.actor != actorId) continue; // There's no roll.
+          if(message.speaker.alias === 'CALCULATOR') continue;
+          console.log('any:',any)
+          if(!any && message.speaker.actor != actorId) continue; // There's no roll.
           // Add message to number of messages to calculate.
-          console.log('test')
+          
           if(typeof message.flags.betterrolls5e == 'object'){
+            console.log('test')
              //if better rolls
               let damages = 0;
                message.flags.betterrolls5e.entries.forEach(function(item,index){
                 if(item.type == 'damage'){
                  // console.log(item.baseRoll?.total)
-                  if(primary && damages > 0) return false;
+                  if(!all && damages > 0) return false;
                   total += item.baseRoll?.total;
                   rolls.push(item.baseRoll?.total)
                   if(item.critRoll !== null){
