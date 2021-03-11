@@ -70,6 +70,7 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
            }else{
             //if not better rolls
              // if(message.speaker.alias === 'CALCULATOR') continue;
+             if(message.type !== 5) continue;
               let rollData = JSON.parse(message.roll);
              // console.log('roll:', rollData)
               //if(rollData.terms[0].class === 'Die' && rollData.terms[0].faces < 20){
@@ -110,6 +111,7 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
                 }
                })
            }else{
+            if(message.type !== 5) continue;
                let rollData = JSON.parse(message.roll);
              // console.log('roll:', rollData)
               //if(rollData.terms[0].class === 'Die' && rollData.terms[0].faces < 20){
