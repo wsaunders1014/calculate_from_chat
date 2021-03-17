@@ -10,10 +10,16 @@ It defaults to the user's attached Actor, so make sure player's have an attached
 
 There are additional keywords:
 all - adds all damage rolls to calculation. So if your weapon does 1d10 Slashing and has a 1d6 other formula, it will include both rolls.
-any - adds rolls from any source. Mostly useful for GM so you don't have to select a token first. 
+any - adds rolls from any source. Mostly useful for GM so you don't have to select a token first.
+AC:N - Checks the rolls against an AC number and excludes it if it doesn't match.
+-N/+N - Adds or subracts a number from the total. 
 
 Examples:
 
 /calc 3 all - Will calculate all damage rolls in last 3 cards from actor.
 
 /calc 30s any - Will calculate rolls from any actor or roll in the last 30 seconds.
+
+/calc 2 AC:14 - Calculates your last two attack rolls that were equal to or greater than 14.
+
+/calc 4 -5 - Calculates last 4 rolls and then subtracts 5.
