@@ -15,19 +15,19 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
     invokeOnCommand: (chatlog, messageText, chatdata) => {
       console.log("Invoked /calculate");
       //console.log(chatlog, messageText, chatdata);
-     
+      //console.log(messageText)
       const N = Number(messageText.match(/\d+/g)[0]);
       let timer = /\d+s|sec/g.test(messageText);
       let any = /any/g.test(messageText); // Set any flag
-      let primary = /primary/g.test(messageText); //Set primary flag
+    //  let primary = /primary/g.test(messageText); //Set primary flag
       let all = /all/g.test(messageText);
       //let secondary = /secondary/g.test(messageText); //Set secondary flag
       const userId = game.user.data._id;
       const tokenId = canvas.tokens.controlled[0]?.id || game.data.messages[game.data.messages.length-1].speaker.token;
       const actorId = canvas.tokens.controlled[0]?.actor?.id || game.user.data.character || game.data.messages[game.data.messages.length-1].speaker.actor; // Defaults to actor of last message.
       const alias = game.data.messages[game.data.messages.length-1].speaker.alias;
-     // console.log('userId: ',userId, 'tokenId: ',tokenId, 'actorId: ',actorId);
-      //console.log('N:',N,'timer:',timer)
+      console.log('userId: ',userId, 'tokenId: ',tokenId, 'actorId: ',actorId);
+      console.log('N:',N,'timer:',timer,'any:',any,'all:',all)
       let total = 0;
       let rolls = [];
       let length = game.data.messages.length;
@@ -54,16 +54,29 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
              //if better rolls
               let damages = 0;
                message.flags.betterrolls5e.entries.forEach(function(item,index){
-                if(item.type == 'damage'){
-                 // console.log(item.baseRoll?.total)
-                  if(!all && damages > 0) return false;
-                  total += item.baseRoll?.total;
-                  rolls.push(item.baseRoll?.total)
-                  if(item.critRoll !== null){
-                    total += item.critRoll?.total;
-                    rolls.push(item.critRoll?.total)
-                  }
-                  damages++;
+               // console.log('item:',item)
+                if(item.type == 'damage-group'){
+                  item.entries.forEach(function(roll){
+                    //console.log('roll:',roll)
+                    if(roll.type == 'damage'){
+                      if(!all && damages > 0) return false;
+                      total += roll.baseRoll?.total;
+                      rolls.push(roll.baseRoll?.total);
+                      damages++;
+                      if(roll.critRoll !== null){
+                        total += roll.critRoll?.total;
+                        rolls.push(roll.critRoll?.total)
+                      }
+                    }
+                  })
+                  // if(!all && damages > 0) return false;
+                  // total += item.baseRoll?.total;
+                  // rolls.push(item.baseRoll?.total)
+                  // if(item.critRoll !== null){
+                  //   total += item.critRoll?.total;
+                  //   rolls.push(item.critRoll?.total)
+                  // }
+                  // damages++;
                 }
                })
              
@@ -72,7 +85,7 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
              // if(message.speaker.alias === 'CALCULATOR') continue;
              if(message.type !== 5) continue;
               let rollData = JSON.parse(message.roll);
-             // console.log('roll:', rollData)
+              console.log('roll:', rollData)
               //if(rollData.terms[0].class === 'Die' && rollData.terms[0].faces < 20){
                 total +=rollData.total;
                 rolls.push(rollData.total)
