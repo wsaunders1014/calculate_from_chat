@@ -16,10 +16,13 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
       console.log("Invoked /calculate");
       //console.log(chatlog, messageText, chatdata);
       //console.log(messageText)
-      const N = Number(messageText.match(/\d+/g)[0]);
+      const numberArray = messageText.match(/\d+/g);
+      const N = Number(numberArray[0]);
       let timer = /\d+s|sec/g.test(messageText);
       let any = /any/g.test(messageText); // Set any flag
-      let AC = (/AC/g.test(messageText)) ? Number(messageText.match(/\d+/g)[1]):false;
+      let AC = messageText.match(/AC\:\d+/g);
+      AC = (AC !== null) ? Number(AC[0].split(':')[1]):false;
+      let doMath = messageText.match(/(\-|\+)\d+/g);
     //  let primary = /primary/g.test(messageText); //Set primary flag
       let all = /all/g.test(messageText);
       //let secondary = /secondary/g.test(messageText); //Set secondary flag
@@ -33,8 +36,8 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
       let rolls = [];
       let length = game.data.messages.length;
      // console.log('Message Array Length: ',length)
-      
-       
+      console.log('AC:',AC)
+      console.log('doMath:',doMath)
       //game.data.messages[0].flags.betterrolls5e.entries[2].baseRoll?.total
       /* Cycle through messages looking for damage rolls */
       if(!timer){ // iterate through messages for N dice rolls.
@@ -63,15 +66,14 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
             message.flags.betterrolls5e.entries.forEach(function(entry,index){
               console.log('item:',entry);
              
-              
               if(entry.rollType =='attack' && !isHit){
-                console.log('isHit1:',isHit)  
+                
                 /* 
                     Use first roll unless it's ignored which means advantage or disadvantage, 
                     either way if it's not ignored 
                 */
                 for(let i= 0;i<entry.entries.length;i++){
-                  console.log(i)
+                  
                   let attack = entry.entries[i];
                   if(attack.ignored) continue;
                   if(AC && (attack.total >= AC || attack.isCrit === true)){
@@ -79,27 +81,13 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
                     break;
                   }
                 }
-               /* entry.entries.forEach(function(attack){
-                  if(attack.ignored) return true;
-                  console.log(AC,attack.total,attack.isCrit)
-                  if(AC && (attack.total >= AC || attack.isCrit === true)){
-                    isHit = true;
-                    return false;
-                  }
-                  console.log('isHit:',isHit)  
-                })*/
-                console.log('isHit2:',isHit)  
               }
               
               if(entry.type == 'damage-group'){
-                console.log('test')
-                console.log('isHit3:',isHit)
                 entry.entries.forEach(function(roll){
-                    //console.log('roll:',roll)
-                    
-                
-                if(roll.type == 'damage' && isHit){
-                  if(!all && damages > 0) return false;
+
+                  if(roll.type == 'damage' && isHit){
+                    if(!all && damages > 0) return false;
                     total += roll.baseRoll?.total;
                     rolls.push(roll.baseRoll?.total);
                     damages++;
@@ -111,19 +99,18 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
                 })
               }
             })
-             
-           }else{
+          }else{
             //if not better rolls
-             // if(message.speaker.alias === 'CALCULATOR') continue;
-             if(message.type !== 5) continue;
-              let rollData = JSON.parse(message.roll);
-              console.log('roll:', rollData)
+            // if(message.speaker.alias === 'CALCULATOR') continue;
+            if(message.type !== 5) continue;
+            let rollData = JSON.parse(message.roll);
+            console.log('roll:', rollData)
               //if(rollData.terms[0].class === 'Die' && rollData.terms[0].faces < 20){
-                total +=rollData.total;
-                rolls.push(rollData.total)
+            total +=rollData.total;
+            rolls.push(rollData.total)
              // }
              
-           }
+          }
           x++;
           //game.data.messages[i].flags.betterrolls5e.entries[2].baseRoll?.total
         }
@@ -166,6 +153,8 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
         }
       }
       if(total > 0){
+        if(doMath !== null)
+          rolls.push(doMath);
         console.log('Total:',total, rolls)
         let rollTxt = rolls.join('+');
         console.log(rollTxt)
