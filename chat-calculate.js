@@ -19,6 +19,7 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
       const N = Number(messageText.match(/\d+/g)[0]);
       let timer = /\d+s|sec/g.test(messageText);
       let any = /any/g.test(messageText); // Set any flag
+      let AC = (/AC/g.test(messageText)) ? Number(messageText.match(/\d+/g)[1]):false;
     //  let primary = /primary/g.test(messageText); //Set primary flag
       let all = /all/g.test(messageText);
       //let secondary = /secondary/g.test(messageText); //Set secondary flag
@@ -42,43 +43,74 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
          //console.log('total:',total)
           if(i==0) break; // Last message
           let message = game.data.messages[i-1];
-          // console.log('message: ', message)
-          // console.log(message.speaker.alias === 'CALCULATOR', message.speaker.actor != actorId)
-          if(message.speaker.alias === 'CALCULATOR') continue;
-         // console.log('any:',any)
-          if(!any && message.speaker.actor != actorId) continue; // There's no roll.
-          // Add message to number of messages to calculate.
+          console.log('message: ', message)
+         
+          /* IGNORE DICE ROLLS IN CALCULATOR MESSAGES */
+          if(message.speaker.alias === 'CALCULATOR') continue; 
+          /* IGNORE NON DICE ROLL MESSAGES */
+          if(message.type !== 5) continue;
+          //if(!any && message.speaker.actor != actorId) continue; // There's no roll.
           
+          /* Roll comes from Better Rolls for 5e */
           if(typeof message.flags.betterrolls5e == 'object'){
-           // console.log('test')
-             //if better rolls
-              let damages = 0;
-               message.flags.betterrolls5e.entries.forEach(function(item,index){
-               // console.log('item:',item)
-                if(item.type == 'damage-group'){
-                  item.entries.forEach(function(roll){
-                    //console.log('roll:',roll)
-                    if(roll.type == 'damage'){
-                      if(!all && damages > 0) return false;
-                      total += roll.baseRoll?.total;
-                      rolls.push(roll.baseRoll?.total);
-                      damages++;
-                      if(roll.critRoll !== null){
-                        total += roll.critRoll?.total;
-                        rolls.push(roll.critRoll?.total)
-                      }
-                    }
-                  })
-                  // if(!all && damages > 0) return false;
-                  // total += item.baseRoll?.total;
-                  // rolls.push(item.baseRoll?.total)
-                  // if(item.critRoll !== null){
-                  //   total += item.critRoll?.total;
-                  //   rolls.push(item.critRoll?.total)
-                  // }
-                  // damages++;
+
+            /* 
+              
+            */
+
+            let isHit = (AC == false) ? true:false;
+            let damages = 0; 
+            message.flags.betterrolls5e.entries.forEach(function(entry,index){
+              console.log('item:',entry);
+             
+              
+              if(entry.rollType =='attack' && !isHit){
+                console.log('isHit1:',isHit)  
+                /* 
+                    Use first roll unless it's ignored which means advantage or disadvantage, 
+                    either way if it's not ignored 
+                */
+                for(let i= 0;i<entry.entries.length;i++){
+                  console.log(i)
+                  let attack = entry.entries[i];
+                  if(attack.ignored) continue;
+                  if(AC && (attack.total >= AC || attack.isCrit === true)){
+                    isHit = true;
+                    break;
+                  }
                 }
-               })
+               /* entry.entries.forEach(function(attack){
+                  if(attack.ignored) return true;
+                  console.log(AC,attack.total,attack.isCrit)
+                  if(AC && (attack.total >= AC || attack.isCrit === true)){
+                    isHit = true;
+                    return false;
+                  }
+                  console.log('isHit:',isHit)  
+                })*/
+                console.log('isHit2:',isHit)  
+              }
+              
+              if(entry.type == 'damage-group'){
+                console.log('test')
+                console.log('isHit3:',isHit)
+                entry.entries.forEach(function(roll){
+                    //console.log('roll:',roll)
+                    
+                
+                if(roll.type == 'damage' && isHit){
+                  if(!all && damages > 0) return false;
+                    total += roll.baseRoll?.total;
+                    rolls.push(roll.baseRoll?.total);
+                    damages++;
+                    if(roll.critRoll !== null){
+                      total += roll.critRoll?.total;
+                      rolls.push(roll.critRoll?.total)
+                    }
+                  }
+                })
+              }
+            })
              
            }else{
             //if not better rolls
