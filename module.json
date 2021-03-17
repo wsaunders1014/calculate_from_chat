@@ -1,7 +1,7 @@
 {
   "name": "calculate_from_chat",
   "title": "Chat Command - Calculate",
-  "description": "Add Chat command to calculate a total from last N rolls.",
+  "description": "Add Chat command to calculate a total from past dice rolls.",
   "version": "0.0.3",
   "minimumCoreVersion" : "0.7.9",
   "compatibleCoreVersion": "0.7.9",
@@ -24,6 +24,6 @@
   ],
   "changelog":"https://raw.githubusercontent.com/wsaunders1014/calculate_from_chat/master/readme.md",
   "url": "https://github.com/wsaunders1014/calculate_from_chat",
-  "manifest": "https://github.com/wsaunders1014/calculate_from_chat/master/module.json",
-  "download": "https://github.com/wsaunders1014/calculate_from_chat/archive/0.0.3.zip"
+  "manifest": "https://raw.githubusercontent.com/wsaunders1014/calculate_from_chat/master/module.json",
+  "download": "https://github.com/wsaunders1014/calculate_from_chat/releases/download/0.0.3/package.zip"
 }
