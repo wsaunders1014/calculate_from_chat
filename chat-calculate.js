@@ -52,7 +52,7 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
           if(message.speaker.alias === 'CALCULATOR') continue; 
           /* IGNORE NON DICE ROLL MESSAGES */
           if(message.type !== 5) continue;
-          //if(!any && message.speaker.actor != actorId) continue; // There's no roll.
+          if(!any && message.speaker.actor != actorId) continue; // There's no roll.
           
           /* Roll comes from Better Rolls for 5e */
           if(typeof message.flags.betterrolls5e == 'object'){
