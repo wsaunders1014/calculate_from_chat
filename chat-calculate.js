@@ -57,10 +57,6 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
           /* Roll comes from Better Rolls for 5e */
           if(typeof message.flags.betterrolls5e == 'object'){
 
-            /* 
-              
-            */
-
             let isHit = (AC == false) ? true:false;
             let damages = 0; 
             message.flags.betterrolls5e.entries.forEach(function(entry,index){
@@ -102,7 +98,7 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
           }else{
             //if not better rolls
             // if(message.speaker.alias === 'CALCULATOR') continue;
-            if(message.type !== 5) continue;
+          //  if(message.type !== 5) continue;
             let rollData = JSON.parse(message.roll);
             console.log('roll:', rollData)
               //if(rollData.terms[0].class === 'Die' && rollData.terms[0].faces < 20){
@@ -124,26 +120,51 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
          //  console.log(i);
           let message = game.data.messages[i-1];
          // console.log('message:',message)
+          if(message.type !== 5) continue;
           if(message.timestamp < cutoff) break; // Past time cutoff
             if(message.speaker.alias === 'CALCULATOR' || message.speaker.actor != actorId) continue;
            if(typeof message.flags.betterrolls5e == 'object'){
-              
-              let damages = 0;
-               message.flags.betterrolls5e.entries.forEach(function(item,index){
-                if(item.type == 'damage'){
-                 // console.log(item.baseRoll?.total)
-                  if(!all && damages > 0) return false;
-                  total += item.baseRoll?.total;
-                  rolls.push(item.baseRoll?.total)
-                  if(item.critRoll !== null){
-                    total += item.critRoll?.total;
-                    rolls.push(item.critRoll?.total)
+
+            let isHit = (AC == false) ? true:false;
+            let damages = 0; 
+            message.flags.betterrolls5e.entries.forEach(function(entry,index){
+              console.log('item:',entry);
+             
+              if(entry.rollType =='attack' && !isHit){
+                
+                /* 
+                    Use first roll unless it's ignored which means advantage or disadvantage, 
+                    either way if it's not ignored 
+                */
+                for(let i= 0;i<entry.entries.length;i++){
+                  
+                  let attack = entry.entries[i];
+                  if(attack.ignored) continue;
+                  if(AC && (attack.total >= AC || attack.isCrit === true)){
+                    isHit = true;
+                    break;
                   }
-                  damages++;
                 }
-               })
-           }else{
-            if(message.type !== 5) continue;
+              }
+              
+              if(entry.type == 'damage-group'){
+                entry.entries.forEach(function(roll){
+
+                  if(roll.type == 'damage' && isHit){
+                    if(!all && damages > 0) return false;
+                    total += roll.baseRoll?.total;
+                    rolls.push(roll.baseRoll?.total);
+                    damages++;
+                    if(roll.critRoll !== null){
+                      total += roll.critRoll?.total;
+                      rolls.push(roll.critRoll?.total)
+                    }
+                  }
+                })
+              }
+            })
+          }else{
+            
                let rollData = JSON.parse(message.roll);
              // console.log('roll:', rollData)
               //if(rollData.terms[0].class === 'Die' && rollData.terms[0].faces < 20){
