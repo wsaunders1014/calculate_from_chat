@@ -27,10 +27,10 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
       let all = /all/g.test(messageText);
       //let secondary = /secondary/g.test(messageText); //Set secondary flag
       const userId = game.user.data._id;
-      const tokenId = canvas.tokens.controlled[0]?.id || game.data.messages[game.data.messages.length-1].speaker.token;
-      const actorId = canvas.tokens.controlled[0]?.actor?.id || game.user.data.character || game.data.messages[game.data.messages.length-1].speaker.actor; // Defaults to actor of last message.
-      const alias = game.data.messages[game.data.messages.length-1].speaker.alias;
-      console.log('userId: ',userId, 'tokenId: ',tokenId, 'actorId: ',actorId);
+      const tokenId = canvas.tokens.controlled[0]?.id || false;
+      const actorId = canvas.tokens.controlled[0]?.actor?.id || game.user.data.character || false; // Defaults to actor of last message.
+      const alias = canvas.tokens.controlled[0]?.actor?.data.name || false;
+      console.log('userId: ',userId, 'tokenId: ',tokenId, 'actorId: ',actorId,'alias:',alias);
       console.log('N:',N,'timer:',timer,'any:',any,'all:',all)
       let total = 0;
       let rolls = [];
@@ -97,14 +97,53 @@ Hooks.on("chatCommandsReady", function(chatCommands) {
             })
           }else{
             //if not better rolls
-            // if(message.speaker.alias === 'CALCULATOR') continue;
-          //  if(message.type !== 5) continue;
+            let isHit = (AC == false) ? true:false;
             let rollData = JSON.parse(message.roll);
             console.log('roll:', rollData)
-              //if(rollData.terms[0].class === 'Die' && rollData.terms[0].faces < 20){
-            total +=rollData.total;
-            rolls.push(rollData.total)
-             // }
+            if(rollData.terms[0].class === 'Die') { // Single Roll
+              /* Check formula to ignore d20 & d100 rolls */
+              if(/d(20|100)/g.test(rollData.formula)) continue;
+              
+              /* Add to total */
+              total +=rollData.total;
+              rolls.push(rollData.total)
+            }else if(rollData.terms[0].class==='DicePool'){ // Multiple Dice, format of Beyond20 Rolls.
+
+              /* Iterate through rolls adding non d20 rolls to total, 
+              UNLESS AC keyword is used, then only add if d20 rolls are above AC */
+              let skip = false;
+              for(let i=0; i < rollData.terms[0].rolls.length;i++){
+                let r = rollData.terms[0].rolls[i];
+                console.log(r);
+                if(/d(20|100)/g.test(r.formula)){ //24 | 14
+                  if(!AC || skip) continue;
+                  /* First we need to confirm whether to use first or second(or third!) roll */
+                  console.log($('[data-message-id="'+message._id+'"]').find('.beyond20-roll-detail-normal')[i])
+                  if($('[data-message-id="'+message._id+'"]').find('.beyond20-roll-detail-normal').eq(i).hasClass('beyond20-roll-detail-discarded'))
+                    continue;
+                  else{
+                    console.log(r.total)
+                    if(r.total >= AC){
+                      isHit = true;
+                    }
+                    skip = true;
+                  }
+                }else{
+                  /* Dice formula is not d20/100, so it must be damage, right? */
+                  console.log(isHit)
+                  if(isHit){
+                    total += r.total;
+                    rolls.push(r.total)
+                  }
+                  if(!all) break; // exit loop unless ALL keyword is used so that other damage rolls don't get added.
+                }
+                
+              }
+            }
+
+
+            
+            
              
           }
           x++;
